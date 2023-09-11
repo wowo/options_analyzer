@@ -11,29 +11,31 @@ if __name__ == '__main__':
         os.environ.get("SUPABASE_KEY")
     )
 
-    ticker_name = 'GOOG'
-    ticker = yf.Ticker(ticker_name)
-    last_price = ticker.history()['Close'].iloc[-1]
+    ticker_names = ['GOOG', 'PYPL']
 
-    expirations = ticker.options
-    for expiration in expirations[:3]:
-        puts: DataFrame = ticker.option_chain(expiration).puts
+    for ticker_name in ticker_names:
+        ticker = yf.Ticker(ticker_name)
+        last_price = ticker.history()['Close'].iloc[-1]
 
-        underscore_cols = {}
-        for column in puts.columns.values:
-            underscore_cols[column] = inflection.underscore(column)
-        puts = puts.rename(columns=underscore_cols)
-        puts.fillna(0, inplace=True)
+        expirations = ticker.options
+        for expiration in expirations[:3]:
+            puts: DataFrame = ticker.option_chain(expiration).puts
 
-        for index, row in puts.iterrows():
-            row_data = row.to_dict()
-            row_data['last_trade_date'] = row_data['last_trade_date'].isoformat()
-            row_data['ticker'] = ticker_name
-            row_data['expiration'] = expiration
-            row_data['stock_last_price'] = last_price
+            underscore_cols = {}
+            for column in puts.columns.values:
+                underscore_cols[column] = inflection.underscore(column)
+            puts = puts.rename(columns=underscore_cols)
+            puts.fillna(0, inplace=True)
+
+            rows_data = []
+            for index, row in puts.iterrows():
+                row_data = row.to_dict()
+                row_data['last_trade_date'] = row_data['last_trade_date'].isoformat()
+                row_data['ticker'] = ticker_name
+                row_data['expiration'] = expiration
+                row_data['stock_last_price'] = last_price
+                rows_data.append(row_data)
             try:
-                supabase.table('puts').upsert(row_data).execute()
+                supabase.table('puts').upsert(rows_data).execute()
             except Exception as e:
-                print(row_data)
                 print(str(e))
-
