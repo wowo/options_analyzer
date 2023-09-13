@@ -51,7 +51,8 @@ def get_tickers_for_analysis():
                'SMCI', 'SPLK', 'UBER', 'SPOT', 'RIVN', 'EWBC', 'PSNY', 'META', 'RBLX', 'SMWB', 'MED', 'NVDA',
                'INTC', 'FLIC', 'MMM', 'MO', 'ELBM', 'PLTR', 'CIOXY', 'BIDU', 'TCEHY', 'BABA', 'ASML', 'MNDY',
                'DOCN', 'GDDY', 'SHOP', 'MDB', 'OKTA', 'AKAM', 'FSLY', 'AFRM', 'AAPL', 'MPWR', 'SGHC',
-               'NET', 'SNOW', 'DDOG', 'OTGLF', 'ABNB', 'DIS', 'NFLX', 'MSFT', 'CRM', 'AMZN', 'GOOG', 'RYAAY']
+               'NET', 'SNOW', 'DDOG', 'OTGLF', 'ABNB', 'DIS', 'NFLX', 'MSFT', 'CRM', 'AMZN', 'GOOG', 'RYAAY',
+               'PATH', 'ON', 'TWLO', 'U', 'DBX', 'S']
     tickers = tickers + fetch_top_quant_from_seeking_alpha()
 
     return set(tickers)
