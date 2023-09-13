@@ -8,6 +8,7 @@ import pytz
 import requests
 import yfinance as yf
 
+EXPIRATION_PERIODS_COUNT = 5
 STOCK_COLUMNS = ['symbol', 'industry', 'industryDisp', 'longName', 'recommendationKey', 'sector', 'sectorDisp',
                  'SandP52WeekChange', 'auditRisk', 'averageDailyVolume10Day', 'averageVolume', 'averageVolume10days',
                  'beta', 'boardRisk', 'bookValue', 'compensationRisk', 'currentPrice', 'currentRatio',
@@ -55,7 +56,7 @@ def get_tickers_for_analysis():
                'PATH', 'ON', 'TWLO', 'U', 'DBX', 'S']
     tickers = tickers + fetch_top_quant_from_seeking_alpha()
 
-    return set(tickers)
+    return sorted(set(tickers))
 
 
 if __name__ == '__main__':
@@ -76,7 +77,7 @@ if __name__ == '__main__':
             supabase.table('stocks').upsert(stock_data).execute()
 
             expirations = ticker.options
-            for expiration in expirations[:3]:
+            for expiration in expirations[:EXPIRATION_PERIODS_COUNT]:
                 print(f'Fetching options chain for symbol {symbol} expiration {expiration}')
                 puts: DataFrame = ticker.option_chain(expiration).puts
 
