@@ -1,8 +1,10 @@
 from datetime import datetime
 from pandas import DataFrame
 from supabase import create_client, Client
+from utils import get_symbols_from_database
 import inflection
 import json
+import logging
 import os
 import pytz
 import requests
@@ -43,10 +45,13 @@ def fetch_top_quant_from_seeking_alpha():
         'Content-Type': 'application/json',
     }
     response = requests.request('POST', url, headers=headers, data=payload)
+    if response.status_code != 200:
+        logging.warning(f'Error {response.status_code} fetching symbols from SA: {response.text}')
+        return []
     return [x['attributes']['name'] for x in response.json()['data']]
 
 
-def get_tickers_for_analysis():
+def get_tickers_for_analysis(supabase: Client):
     tickers = ['DUOL', 'ASC', 'PERI', 'ADYEY', 'JNPR', 'LUV', 'CNHI', 'AGCO', 'NU', 'CRWD', 'PYPL', 'TM',
                'SONY', 'EA', 'TTWO', 'MA', 'INTU', 'V', 'TEAM', 'HUBS', 'ADBE', 'AMD', 'GMVHF', 'BBAI', 'IMMR',
                'SMCI', 'SPLK', 'UBER', 'SPOT', 'RIVN', 'EWBC', 'PSNY', 'META', 'RBLX', 'SMWB', 'MED', 'NVDA',
@@ -55,17 +60,17 @@ def get_tickers_for_analysis():
                'NET', 'SNOW', 'DDOG', 'OTGLF', 'ABNB', 'DIS', 'NFLX', 'MSFT', 'CRM', 'AMZN', 'GOOG', 'RYAAY',
                'PATH', 'ON', 'TWLO', 'U', 'DBX', 'S']
     tickers = tickers + fetch_top_quant_from_seeking_alpha()
-
+    tickers = tickers + get_symbols_from_database(supabase)
     return sorted(set(tickers))
 
 
 if __name__ == '__main__':
-    supabase: Client = create_client(
-        os.environ.get("SUPABASE_URL"),
-        os.environ.get("SUPABASE_KEY")
+    supabase = create_client(
+        os.environ.get('SUPABASE_URL'),
+        os.environ.get('SUPABASE_KEY')
     )
 
-    symbols = get_tickers_for_analysis()
+    symbols = get_tickers_for_analysis(supabase)
 
     for symbol in symbols:
         try:

@@ -1,22 +1,17 @@
 from datetime import datetime
-
+from supabase import create_client
+from utils import get_symbols_from_database
+import os
 import pytz
 import requests
-from supabase import create_client, Client
-import os
 
 if __name__ == '__main__':
-    supabase: Client = create_client(
-        os.environ.get("SUPABASE_URL"),
-        os.environ.get("SUPABASE_KEY")
+    supabase = create_client(
+        os.environ.get('SUPABASE_URL'),
+        os.environ.get('SUPABASE_KEY')
     )
 
-    response = supabase.table('stocks')\
-        .select('symbol')\
-        .execute()
-    symbols = sorted([x['symbol'] for x in response.data])
-
-    for symbol in symbols:
+    for symbol in get_symbols_from_database():
         print(f'Fetching {symbol} from Seeking Alpha')
         try:
             url = f'https://seekingalpha.com/api/v3/symbols/{symbol}/rating/periods?filter[periods][]=0&filter[periods][]=3&filter[periods][]=6'
