@@ -11,7 +11,7 @@ if __name__ == '__main__':
         os.environ.get('SUPABASE_KEY')
     )
 
-    for symbol in get_symbols_from_database():
+    for symbol in get_symbols_from_database(supabase):
         print(f'Fetching {symbol} from Seeking Alpha')
         try:
             url = f'https://seekingalpha.com/api/v3/symbols/{symbol}/rating/periods?filter[periods][]=0&filter[periods][]=3&filter[periods][]=6'
