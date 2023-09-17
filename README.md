@@ -14,3 +14,7 @@
     from puts
     where  (stock_last_price - strike) / stock_last_price between 0.09 and 0.2
     order by bid DESC
+
+# deploy cloud function
+
+    gcloud functions deploy publish_symbols_to_analyze --runtime python310 --trigger-http --service-account options-analyzer@quantride.iam.gserviceaccount.com
