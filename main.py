@@ -51,7 +51,7 @@ def fetch_top_quant_from_seeking_alpha():
     return [x['attributes']['name'] for x in response.json()['data']]
 
 
-def get_tickers_for_analysis(supabase: Client):
+def get_symbols_for_analysis(supabase: Client):
     tickers = ['DUOL', 'ASC', 'PERI', 'ADYEY', 'JNPR', 'LUV', 'CNHI', 'AGCO', 'NU', 'CRWD', 'PYPL', 'TM',
                'SONY', 'EA', 'TTWO', 'MA', 'INTU', 'V', 'TEAM', 'HUBS', 'ADBE', 'AMD', 'GMVHF', 'BBAI', 'IMMR',
                'SMCI', 'SPLK', 'UBER', 'SPOT', 'RIVN', 'EWBC', 'PSNY', 'META', 'RBLX', 'SMWB', 'MED', 'NVDA',
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         os.environ.get('SUPABASE_KEY')
     )
 
-    symbols = get_tickers_for_analysis(supabase)
+    symbols = get_symbols_for_analysis(supabase)
 
     for symbol in symbols:
         try:

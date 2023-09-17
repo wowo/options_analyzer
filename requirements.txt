@@ -4,3 +4,5 @@ inflection~=0.5.1
 pandas~=2.0.3
 pytz~=2023.3.post1
 requests~=2.31.0
+google-cloud-pubsub
+flask
