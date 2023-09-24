@@ -17,4 +17,4 @@
 
 # deploy cloud function
 
-    gcloud functions deploy publish_symbols_to_analyze --runtime python310 --trigger-http --service-account options-analyzer@quantride.iam.gserviceaccount.com
+    gcloud functions deploy publish_symbols_to_analyze --runtime python311  --trigger-http --service-account options-analyzer@quantride.iam.gserviceaccount.com --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest
