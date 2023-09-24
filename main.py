@@ -6,21 +6,22 @@ from supabase import create_client
 
 app = Flask(__name__)
 
-publisher = pubsub_v1.PublisherClient()
-topic_path = publisher.topic_path(
-    os.environ.get('GCP_PROJECT_ID'),
-    os.environ.get('GCP_TOPIC_ID'),
-)
-
-supabase = create_client(
-    os.environ.get('SUPABASE_URL'),
-    os.environ.get('SUPABASE_KEY')
-)
-debug = os.environ.get('DEBUG')
+debug = True # os.environ.get('DEBUG')
 
 
 @app.route('/')
-def publish_symbol_to_analyze():
+def publish_symbols_to_analyze(param):
+    publisher = pubsub_v1.PublisherClient()
+    topic_path = publisher.topic_path(
+        os.environ.get('GCP_PROJECT_ID'),
+        os.environ.get('GCP_TOPIC_ID'),
+    )
+
+    supabase = create_client(
+        os.environ.get('SUPABASE_URL'),
+        os.environ.get('SUPABASE_KEY')
+    )
+
     try:
         symbol = request.args.get('symbol')
         symbols = get_symbols_from_database(supabase)
