@@ -1,16 +1,11 @@
 import os
 from google.cloud import pubsub_v1
-from flask import Flask, request
+from flask import Request
 from utils import get_symbols_from_database
 from supabase import create_client
 
-app = Flask(__name__)
 
-debug = True # os.environ.get('DEBUG')
-
-
-@app.route('/')
-def publish_symbols_to_analyze(param):
+def publish_symbols_to_analyze(request: Request):
     publisher = pubsub_v1.PublisherClient()
     topic_path = publisher.topic_path(
         os.environ.get('GCP_PROJECT_ID'),
@@ -33,10 +28,4 @@ def publish_symbols_to_analyze(param):
 
         return f"Published {len(symbols)} symbols.", 200
     except Exception as e:
-        if debug:
-            raise e
         return f"Error publishing symbols: {e}", 500
-
-
-if __name__ == "__main__":
-    app.run(debug=debug)
