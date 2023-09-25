@@ -67,9 +67,9 @@ def get_symbols_for_analysis(supabase: Client):
     return sorted(set(tickers))
 
 
-def download_symbol_data(symbol: str):
+def download_symbol_data(param, symbol: str):
     try:
-        logging.info(f'Fetching symbol {symbol}')
+        logging.info(f'Fetching symbol {symbol}, with additional param: {param}')
         ticker = yf.Ticker(symbol)
         info = ticker.info
         stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
@@ -102,6 +102,7 @@ def download_symbol_data(symbol: str):
                 print(str(e))
     except Exception as e:
         logging.error(f'Exception occurred: {e}')
+        raise e
 
 
 if __name__ == '__main__':
