@@ -8,6 +8,9 @@ import logging
 import os
 import pytz
 import requests
+
+import appdirs as ad
+ad.user_cache_dir = lambda *args: "/tmp"
 import yfinance as yf
 
 EXPIRATION_PERIODS_COUNT = 5
@@ -64,6 +67,43 @@ def get_symbols_for_analysis(supabase: Client):
     return sorted(set(tickers))
 
 
+def download_symbol_data(symbol: str):
+    try:
+        logging.info(f'Fetching symbol {symbol}')
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
+        stock_data['updated_at'] = datetime.now().isoformat()
+        supabase.table('stocks').upsert(stock_data).execute()
+
+        expirations = ticker.options
+        for expiration in expirations[:EXPIRATION_PERIODS_COUNT]:
+            logging.info(f'Fetching options chain for symbol {symbol} expiration {expiration}')
+            puts: DataFrame = ticker.option_chain(expiration).puts
+
+            underscore_cols = {}
+            for column in puts.columns.values:
+                underscore_cols[column] = inflection.underscore(column)
+            puts = puts.rename(columns=underscore_cols)
+            puts.fillna(0, inplace=True)
+
+            rows_data = []
+            for index, row in puts.iterrows():
+                row_data = row.to_dict()
+                row_data['last_trade_date'] = row_data['last_trade_date'].isoformat()
+                row_data['symbol'] = symbol
+                row_data['expiration'] = expiration
+                row_data['updated_at'] = datetime.now().astimezone(pytz.timezone('Poland')).isoformat()
+
+                rows_data.append(row_data)
+            try:
+                supabase.table('puts').upsert(rows_data).execute()
+            except Exception as e:
+                print(str(e))
+    except Exception as e:
+        logging.error(f'Exception occurred: {e}')
+
+
 if __name__ == '__main__':
     supabase = create_client(
         os.environ.get('SUPABASE_URL'),
@@ -73,37 +113,4 @@ if __name__ == '__main__':
     symbols = get_symbols_for_analysis(supabase)
 
     for symbol in symbols:
-        try:
-            print(f'Fetching symbol {symbol}')
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
-            stock_data['updated_at'] = datetime.now().isoformat()
-            supabase.table('stocks').upsert(stock_data).execute()
-
-            expirations = ticker.options
-            for expiration in expirations[:EXPIRATION_PERIODS_COUNT]:
-                print(f'Fetching options chain for symbol {symbol} expiration {expiration}')
-                puts: DataFrame = ticker.option_chain(expiration).puts
-
-                underscore_cols = {}
-                for column in puts.columns.values:
-                    underscore_cols[column] = inflection.underscore(column)
-                puts = puts.rename(columns=underscore_cols)
-                puts.fillna(0, inplace=True)
-
-                rows_data = []
-                for index, row in puts.iterrows():
-                    row_data = row.to_dict()
-                    row_data['last_trade_date'] = row_data['last_trade_date'].isoformat()
-                    row_data['symbol'] = symbol
-                    row_data['expiration'] = expiration
-                    row_data['updated_at'] = datetime.now().astimezone(pytz.timezone('Poland')).isoformat()
-
-                    rows_data.append(row_data)
-                try:
-                    supabase.table('puts').upsert(rows_data).execute()
-                except Exception as e:
-                    print(str(e))
-        except Exception as e:
-            print(f'Exception occurred: {e}')
+        download_symbol_data(symbol)
