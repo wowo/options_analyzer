@@ -39,9 +39,9 @@ def publish_symbols_to_analyze(request: Request):
         return f"Error publishing symbols: {e}", 500
 
 
-def pubsub_download_symbols_data_handler(context, event):
+def pubsub_download_symbols_data_handler(event, context):
 
     pubsub_message = base64.b64decode(event['data']).decode('utf-8')
     logging.info(f'Received message: {pubsub_message}, resource: {context.resource}, event_id: {context.event_id}')
 
-    download_symbol_data(pubsub_message)
+    download_symbol_data(pubsub_message, supabase)

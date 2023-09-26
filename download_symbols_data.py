@@ -67,9 +67,9 @@ def get_symbols_for_analysis(supabase: Client):
     return sorted(set(tickers))
 
 
-def download_symbol_data(param, symbol: str):
+def download_symbol_data(symbol: str, supabase: Client):
     try:
-        logging.info(f'Fetching symbol {symbol}, with additional param: {param}')
+        logging.info(f'Fetching symbol {symbol}')
         ticker = yf.Ticker(symbol)
         info = ticker.info
         stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
