@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="background-color: #f2f2f2; padding: 1rem;font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; tab-size: 4; line-height: 1.5;">
+    <div style="margin-left: auto; margin-right: auto">
+        <table style="min-width: 100%">
+            <thead>
+                <tr style="height: 4rem; border-bottom: 1px solid #b3b3b3; color: #ffffff; background-color: rgb(75, 85, 99);">
+                    <th style="padding: .5rem">Symbol</th>
+                    <th style="padding: .5rem">Price</th>
+                    <th style="padding: .5rem">Strike</th>
+                    <th style="padding: .5rem">Expiration</th>
+                    <th style="padding: .5rem">Bid</th>
+                    <th style="padding: .5rem">IV</th>
+                    <th style="padding: .5rem">Financials</th>
+                    <th style="padding: .5rem">Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                    <tr style="border-bottom: 1px solid #b3b3b3; background-color: {% if loop.index is even %}rgb(209, 213, 219){% else %}rgb(243, 244, 246){% endif %}; padding: 8px;">
+                        <td style="padding: .5rem">
+                            <a href="https://finance.yahoo.com/quote/{{ row.contract_symbol }}" style="text-decoration: none; font-weight: bold; color: black">{{ row.symbol }}</a><br>
+                            <small style="font-weight: 600">{{ row.long_name }}</small><br>
+                            <small>{{ row.industry }}</small><br>
+                            <small>{{ row.sector }}</small>
+                        </td>
+                        <td style="padding: .5rem">{{ row.current_price | round(2) }}</td>
+                        <td style="padding: .5rem">{{ row.strike }}<br><small>({{ (((row.current_price - row.strike) / row.current_price) * 100) | int }}%)</small></td>
+                        <td style="padding: .5rem">{{ row.expiration }}<br><small>({{ row.days_until_expire }})</small></td>
+                        <td style="padding: .5rem">{{ row.bid }}<br><small>({{ row.volume | int }})</small></td>
+                        <td style="padding: .5rem">{{ row.iv }}</td>
+                        <td style="padding: .5rem">
+                            <small>
+                                EPS &laquo; <span style="font-weight: 600;">{{ (row.trailing_eps or 0) | round(2) }}</span><br>
+                                EPS &raquo; <span style="font-weight: 600;">{{ (row.forward_eps or 0) | round(2) }}</span><br>
+                                PE &raquo; <span style="font-weight: 600;">{{ (row.forward_pe or 0) |  round(2) }}</span><br>
+                                PE &laquo; <span style="font-weight: 600;">{{ (row.trailing_pe or 0) | round(2) }}</span><br>
+                                EC&nbsp;<span style="font-weight: 600;">{{ row.next_earnings_date }}</span>
+                            </small>
+                        </td>
+                        <td><small>{{ row.updated_at }}</small></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
