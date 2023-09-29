@@ -1,24 +1,26 @@
-import smtplib
 from datetime import datetime
+from dateutil import parser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-from dateutil import parser
 from jinja2 import Environment, FileSystemLoader
 from supabase import Client, create_client
 import os
+import pytz
+import smtplib
 
 
 def notify_interesting_options(supabase: Client):
     response = supabase.table('puts_opportunities').select('*').limit(20).execute()
     env = Environment(loader=FileSystemLoader('templates'))
-    template = env.get_template('notify_interesting_options.html')
+    template = env.get_template('notify_interesting_options_email.html')
 
     now = datetime.now()
+    cest = pytz.timezone('Europe/Warsaw')
+
     data = map(lambda x: {
         **x,
         'days_until_expire': (datetime.strptime(x['expiration'], '%Y-%m-%d') - now).days,
-        'updated_at': parser.parse(x['updated_at']).strftime('%Y-%m-%d %X')
+        'updated_at': parser.parse(x['updated_at']).astimezone(cest).strftime('%Y-%m-%d %X')
     }, response.data)
 
     output = template.render(data=data)
