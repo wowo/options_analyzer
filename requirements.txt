@@ -8,3 +8,4 @@ google-cloud-pubsub==2.18.4
 Flask==2.3.3
 functions-framework==3.4.0
 Jinja2
+scipy

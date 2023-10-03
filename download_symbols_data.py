@@ -1,13 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pandas import DataFrame
 from supabase import create_client, Client
-from utils import get_symbols_from_database
 import inflection
-import json
 import logging
+import numpy as np
 import os
 import pytz
-import requests
+import scipy.stats as stats
 
 import appdirs as ad
 ad.user_cache_dir = lambda *args: "/tmp"
@@ -36,35 +35,27 @@ STOCK_COLUMNS = ['symbol', 'industry', 'industryDisp', 'longName', 'recommendati
                  'volume']
 
 
-def fetch_top_quant_from_seeking_alpha():
-    url = 'https://seekingalpha.com/api/v3/screener_results'
-    payload = json.dumps({
-        'per_page': 200,
-        'sort': '-quant_rating',
-        'type': 'stock'
-    })
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
-        'Content-Type': 'application/json',
-    }
-    response = requests.request('POST', url, headers=headers, data=payload)
-    if response.status_code != 200:
-        logging.warning(f'Error {response.status_code} fetching symbols from SA: {response.text}')
-        return []
-    return [x['attributes']['name'] for x in response.json()['data']]
+def get_annualized_volatility(symbol: str) -> float:
+    current_date = datetime.today().date()
+    date_year_ago = current_date - timedelta(days=365)
+    df = yf.download(symbol, start=date_year_ago, end=current_date)
+    df['Log_Return'] = df['Close'].apply(lambda x: np.log(x)) - df['Close'].shift(1).apply(lambda x: np.log(x))
+    daily_volatility = df['Log_Return'].std()
+    volatility = daily_volatility * np.sqrt(252)
+    return volatility
 
 
-def get_symbols_for_analysis(supabase: Client):
-    tickers = ['DUOL', 'ASC', 'PERI', 'ADYEY', 'JNPR', 'LUV', 'CNHI', 'AGCO', 'NU', 'CRWD', 'PYPL', 'TM',
-               'SONY', 'EA', 'TTWO', 'MA', 'INTU', 'V', 'TEAM', 'HUBS', 'ADBE', 'AMD', 'GMVHF', 'BBAI', 'IMMR',
-               'SMCI', 'SPLK', 'UBER', 'SPOT', 'RIVN', 'EWBC', 'PSNY', 'META', 'RBLX', 'SMWB', 'MED', 'NVDA',
-               'INTC', 'FLIC', 'MMM', 'MO', 'ELBM', 'PLTR', 'CIOXY', 'BIDU', 'TCEHY', 'BABA', 'ASML', 'MNDY',
-               'DOCN', 'GDDY', 'SHOP', 'MDB', 'OKTA', 'AKAM', 'FSLY', 'AFRM', 'AAPL', 'MPWR', 'SGHC',
-               'NET', 'SNOW', 'DDOG', 'OTGLF', 'ABNB', 'DIS', 'NFLX', 'MSFT', 'CRM', 'AMZN', 'GOOG', 'RYAAY',
-               'PATH', 'ON', 'TWLO', 'U', 'DBX', 'S']
-    tickers = tickers + fetch_top_quant_from_seeking_alpha()
-    tickers = tickers + get_symbols_from_database(supabase)
-    return sorted(set(tickers))
+def get_black_scholes_put_delta(current_stock_price: float, strike_price: float, time_to_expire_years: float,
+                                risk_free_interest_rate: float, annualized_stock_volatility: float) -> float:
+    d1 = (np.log(current_stock_price / strike_price) + (risk_free_interest_rate + 0.5 * annualized_stock_volatility ** 2) * time_to_expire_years) / (annualized_stock_volatility * np.sqrt(time_to_expire_years))
+    put_delta = stats.norm.cdf(d1) - 1
+    return put_delta
+
+
+def get_10_year_treasury_yield() -> float:
+    tnx = yf.Ticker('^TNX')
+    hist = tnx.history(period='1d')
+    return hist['Close'].iloc[0] / 100
 
 
 def download_symbol_data(symbol: str, supabase: Client):
@@ -73,8 +64,11 @@ def download_symbol_data(symbol: str, supabase: Client):
         ticker = yf.Ticker(symbol)
         info = ticker.info
         stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
+        stock_data['annualized_volatility'] = get_annualized_volatility(symbol)
         stock_data['updated_at'] = datetime.now().isoformat()
         supabase.table('stocks').upsert(stock_data).execute()
+
+        tnx = get_10_year_treasury_yield()
 
         expirations = ticker.options
         for expiration in expirations[:EXPIRATION_PERIODS_COUNT]:
@@ -89,11 +83,16 @@ def download_symbol_data(symbol: str, supabase: Client):
 
             rows_data = []
             for index, row in puts.iterrows():
+                days_expire = (datetime.strptime(expiration, '%Y-%m-%d').date() - datetime.today().date()).days
+
                 row_data = row.to_dict()
                 row_data['last_trade_date'] = row_data['last_trade_date'].isoformat()
                 row_data['symbol'] = symbol
                 row_data['expiration'] = expiration
                 row_data['updated_at'] = datetime.now().astimezone(pytz.timezone('Poland')).isoformat()
+                row_data['delta'] = get_black_scholes_put_delta(stock_data['current_price'], row_data['strike'],
+                                                                days_expire / 365, tnx,
+                                                                stock_data['annualized_volatility'])
 
                 rows_data.append(row_data)
             try:
@@ -111,7 +110,4 @@ if __name__ == '__main__':
         os.environ.get('SUPABASE_KEY')
     )
 
-    symbols = get_symbols_for_analysis(supabase)
-
-    for symbol in symbols:
-        download_symbol_data(symbol)
+    download_symbol_data('META', supabase)

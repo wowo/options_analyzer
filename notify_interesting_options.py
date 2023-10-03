@@ -1,4 +1,5 @@
 from datetime import datetime
+import dateutil
 from dateutil import parser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -9,9 +10,16 @@ import pytz
 import smtplib
 
 
+def _jinja2_filter_short_date(date, fmt=None):
+    date = dateutil.parser.parse(date)
+    native = date.replace(tzinfo=None)
+    return native.strftime('%y-%m-%d')
+
+
 def notify_interesting_options(supabase: Client):
     response = supabase.table('puts_opportunities').select('*').limit(20).execute()
     env = Environment(loader=FileSystemLoader('templates'))
+    env.filters['short_date'] = _jinja2_filter_short_date
     template = env.get_template('notify_interesting_options_email.html')
 
     now = datetime.now()
@@ -19,8 +27,9 @@ def notify_interesting_options(supabase: Client):
 
     data = map(lambda x: {
         **x,
+        'percentage_change': 100 * ((x['current_price'] - x['previous_close']) / x['previous_close']),
         'days_until_expire': (datetime.strptime(x['expiration'], '%Y-%m-%d') - now).days,
-        'updated_at': parser.parse(x['updated_at']).astimezone(cest).strftime('%Y-%m-%d %X')
+        'updated_at': parser.parse(x['updated_at']).astimezone(cest).strftime('%y-%m-%d<br>%X')
     }, response.data)
 
     output = template.render(data=data)
@@ -28,16 +37,17 @@ def notify_interesting_options(supabase: Client):
     with open('/tmp/output.html', 'w') as f:
         f.write(output)
 
+
 def send_over_email(body):
     email_credentials = os.environ.get('EMAIL_CREDENTIALS', None)
     email_server = os.environ.get('EMAIL_SERVER', 'smtp.gmail.com:587')
     email_sender = os.environ.get('EMAIL_SENDER', 'mailer@sznapka.pl')
-    email_recipient = os.environ.get('EMAIL_RECIPIENT', None)
+    email_recipient = os.environ.get('EMAIL_RECIPIENT', '').replace('-', ',')
 
     message = MIMEMultipart('mixed')
     message['From'] = 'Options Analyzer <{}>'.format(email_sender)
     message['To'] = email_recipient
-    message['Subject'] = 'Stock opportunities'
+    message['Subject'] = f'Stock opportunities {datetime.now():%Y-%m-%d}'
     body = MIMEText(body, 'html')
     message.attach(body)
 
