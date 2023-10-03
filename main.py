@@ -4,6 +4,7 @@ from download_symbols_data import download_symbol_data
 from flask import Request
 from google.cloud import pubsub_v1
 from supabase import create_client
+from notify_interesting_options import notify_interesting_options
 from utils import get_symbols_from_database
 import logging
 import os
@@ -45,3 +46,15 @@ def pubsub_download_symbols_data_handler(event, context):
     logging.info(f'Received message: {pubsub_message}, resource: {context.resource}, event_id: {context.event_id}')
 
     download_symbol_data(pubsub_message, supabase)
+
+
+def send_interesting_options(request: Request):
+    if request.method != 'POST':
+        return f'Method {request.method} not allowed', 405
+
+    recipients = os.environ.get('EMAIL_RECIPIENTS')
+    logging.info(f'Sending interesting stock opportunities to {recipients}')
+    notify_interesting_options(supabase)
+    logging.info(f'All sent')
+
+    return '', 200
