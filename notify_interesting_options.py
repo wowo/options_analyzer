@@ -11,6 +11,8 @@ import smtplib
 
 
 def _jinja2_filter_short_date(date, fmt=None):
+    if date is None:
+        return ''
     date = dateutil.parser.parse(date)
     native = date.replace(tzinfo=None)
     return native.strftime('%y-%m-%d')
