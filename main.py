@@ -52,13 +52,13 @@ def send_interesting_options(request: Request):
     if request.method != 'POST':
         return f'Method {request.method} not allowed', 405
 
-    recipients = os.environ.get('EMAIL_RECIPIENTS')
-    if not recipients:
+    recipient = os.environ.get('EMAIL_RECIPIENT').replace('-', ',')
+    if not recipient:
         logging.error('No email recipients specified')
         return 'No email recipients specified', 500
 
-    logging.info(f'Sending interesting stock opportunities to {recipients}')
-    notify_interesting_options(supabase)
+    logging.info(f'Sending interesting stock opportunities to {recipient}')
+    notify_interesting_options(supabase, recipient)
     logging.info(f'All sent')
 
     return '', 200
