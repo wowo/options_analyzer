@@ -52,8 +52,8 @@ def get_black_scholes_put_delta(current_stock_price: float, strike_price: float,
     return put_delta
 
 
-def get_10_year_treasury_yield() -> float:
-    tnx = yf.Ticker('^TNX')
+def get_risk_free_rate_of_return() -> float:
+    tnx = yf.Ticker('^IRX')
     hist = tnx.history(period='1d')
     return hist['Close'].iloc[0] / 100
 
@@ -68,7 +68,7 @@ def download_symbol_data(symbol: str, supabase: Client):
         stock_data['updated_at'] = datetime.now().isoformat()
         supabase.table('stocks').upsert(stock_data).execute()
 
-        tnx = get_10_year_treasury_yield()
+        risk_free_rate = get_risk_free_rate_of_return()
 
         expirations = ticker.options
         for expiration in expirations[:EXPIRATION_PERIODS_COUNT]:
@@ -91,7 +91,7 @@ def download_symbol_data(symbol: str, supabase: Client):
                 row_data['expiration'] = expiration
                 row_data['updated_at'] = datetime.now().astimezone(pytz.timezone('Poland')).isoformat()
                 row_data['delta'] = get_black_scholes_put_delta(stock_data['current_price'], row_data['strike'],
-                                                                days_expire / 365, tnx,
+                                                                days_expire / 365, risk_free_rate,
                                                                 stock_data['annualized_volatility'])
 
                 rows_data.append(row_data)

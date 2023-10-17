@@ -25,17 +25,21 @@ supabase = create_client(
 
 def publish_symbols_to_analyze(request: Request):
     try:
-        symbol = request.args.get('symbol')
+        new_symbols = request.args.get('symbol')
         symbols = get_symbols_from_database(supabase)
-        if symbol:
-            symbols.append(symbol)
-        logging.info(f'Starting to publishing, all: {len(symbols)} new symbol: {symbol}')
+        if new_symbols:
+            new_symbols = new_symbols.split(',')
+            symbols = symbols + new_symbols
+        else:
+            new_symbols = []
+        logging.info(f'Starting to publishing, all: {len(symbols)} new symbols: {new_symbols}')
         for symbol in symbols:
             message_future = publisher.publish(topic_path, symbol.encode('utf-8'))
             message_future.result()
-        logging.info(f'Published {len(symbols)} symbols')
+        msg = f'Published {len(symbols)} symbols, including {len(new_symbols)} new symbols'
+        logging.info(msg)
 
-        return f"Published {len(symbols)} symbols.", 200
+        return msg, 200
     except Exception as e:
         return f"Error publishing symbols: {e}", 500
 
