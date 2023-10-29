@@ -1,5 +1,5 @@
 supabase~=1.0.4
-yfinance~=0.2.30
+yfinance~=0.2.31
 inflection~=0.5.1
 pandas~=2.0.3
 pytz~=2023.3.post1
@@ -7,5 +7,6 @@ requests~=2.31.0
 google-cloud-pubsub==2.18.4
 Flask==2.3.3
 functions-framework==3.4.0
-Jinja2
+Jinja2~=3.1.0
 scipy
+typing_extensions>=4.6.1
