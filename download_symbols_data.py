@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 from pandas import DataFrame
-from supabase import create_client, Client
+from supabase import Client
+import appdirs as ad
 import inflection
 import logging
 import numpy as np
-import os
 import pytz
 import scipy.stats as stats
 
-import appdirs as ad
 ad.user_cache_dir = lambda *args: "/tmp"
 import yfinance as yf
 
@@ -102,12 +101,3 @@ def download_symbol_data(symbol: str, supabase: Client):
     except Exception as e:
         logging.error(f'Exception occurred: {e}')
         raise e
-
-
-if __name__ == '__main__':
-    supabase = create_client(
-        os.environ.get('SUPABASE_URL'),
-        os.environ.get('SUPABASE_KEY')
-    )
-
-    download_symbol_data('META', supabase)

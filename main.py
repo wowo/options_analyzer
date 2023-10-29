@@ -1,11 +1,13 @@
-import base64
-
+from api import get_options_with_filters
 from download_symbols_data import download_symbol_data
 from flask import Request
 from google.cloud import pubsub_v1
-from supabase import create_client
 from notify_interesting_options import notify_interesting_options
+from supabase import create_client
 from utils import get_symbols_from_database
+import base64
+import functions_framework
+import json
 import logging
 import os
 
@@ -21,6 +23,33 @@ supabase = create_client(
     os.environ.get('SUPABASE_URL'),
     os.environ.get('SUPABASE_KEY')
 )
+
+
+def get_headers(request: Request):
+    if request.method == 'OPTIONS':
+        return {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Max-Age': '3600',
+        }
+
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'text/json'
+    }
+
+
+@functions_framework.http
+def get_options_api(request: Request):
+    options = get_options_with_filters(
+        supabase,
+        json.loads(request.args.get('params', '[]')),
+        json.loads(request.args.get('order', '[]')),
+        int(request.args.get('limit', 20))
+    )
+
+    return json.dumps(options), 200, get_headers(request)
 
 
 def publish_symbols_to_analyze(request: Request):
