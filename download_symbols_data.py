@@ -52,9 +52,9 @@ def get_black_scholes_put_delta(current_stock_price: float, strike_price: float,
 
 
 def get_risk_free_rate_of_return() -> float:
-    tnx = yf.Ticker('^IRX')
-    hist = tnx.history(period='1d')
-    return hist['Close'].iloc[0] / 100
+    risk_free = yf.Ticker('^IRX')
+    hist = risk_free.history(period='4d')
+    return hist['Close'].iloc[-1] / 100
 
 
 def download_symbol_data(symbol: str, supabase: Client):
