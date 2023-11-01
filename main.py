@@ -11,6 +11,16 @@ import json
 import logging
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.gcp import GcpIntegration
+
+sentry_sdk.init(
+    dsn="https://cad8a3bb6d1fb1081dcbccb69f71b878@o555346.ingest.sentry.io/4506149590401024",
+    integrations=[GcpIntegration()],
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
+
 logging.basicConfig(level=logging.INFO)
 
 publisher = pubsub_v1.PublisherClient()
