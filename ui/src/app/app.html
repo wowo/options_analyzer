@@ -1,21 +1,6 @@
 <div class="mx-auto">
     <div class="w-full border-gray-300 border-b bg-gray-600 mb-8 p-4">
-        <div
-                class="chip"
-                data-dismissible="chip"
-        >
-            <div class="mr-5 mt-px">Dismissible</div>
-            <div
-                    class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md bg-pink-800 transition-colors hover:bg-pink-900"
-                    data-dismissible-target="chip"
-            >
-                <div role="button" class="h-5 w-5 p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        <app-filter *ngFor="let filter of filters" [filter]="filter" (remove)="removeFilter($event)"></app-filter>
     </div>
     <table class="min-w-full">
         <thead>

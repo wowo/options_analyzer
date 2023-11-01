@@ -5,12 +5,14 @@ import { AppComponent } from './app.component';
 import { CommonModule } from '@angular/common';
 import { registerLocaleData } from '@angular/common';
 import localePl from '@angular/common/locales/pl';
+import { FilterComponent } from './filter/filter.component';
 
 registerLocaleData(localePl, 'pl-PL');
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    FilterComponent
   ],
   imports: [
     BrowserModule,

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import {Filter} from "./model/filter";
+import {Filter} from "./filter/filter";
 
 @Component({
   selector: 'app-root',
@@ -20,6 +20,14 @@ export class AppComponent {
 
 
   async ngOnInit() {
-    this.puts = await this.supabaseService.fetchPuts(this.filters, 100);
+    await this.fetchPuts();
+  }
+
+  async fetchPuts(){
+      this.puts = await this.supabaseService.fetchPuts(this.filters, 100);
+  }
+  async removeFilter(filter: Filter) {
+    this.filters = this.filters.filter(f=> f !== filter);
+    await this.fetchPuts();
   }
 }
