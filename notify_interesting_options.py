@@ -4,7 +4,7 @@ from dateutil import parser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Environment, FileSystemLoader
-from supabase import Client, create_client
+from supabase import Client
 import os
 import pytz
 import smtplib
@@ -59,11 +59,3 @@ def send_over_email(body: str, recipient: str):
         server.login(user, passwd)
         server.sendmail(email_sender, recipient, message.as_string())
         server.quit()
-
-
-if __name__ == '__main__':
-    supabase = create_client(
-        os.environ.get('SUPABASE_URL'),
-        os.environ.get('SUPABASE_KEY')
-    )
-    notify_interesting_options(supabase)

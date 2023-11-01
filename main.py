@@ -2,6 +2,7 @@ from api import get_options_with_filters
 from download_symbols_data import download_symbol_data
 from flask import Request
 from google.cloud import pubsub_v1
+from google.auth import default
 from notify_interesting_options import notify_interesting_options
 from supabase import create_client
 from utils import get_symbols_from_database
@@ -11,13 +12,17 @@ import json
 import logging
 import os
 
-logging.basicConfig(level=logging.INFO)
+import sentry_sdk
+from sentry_sdk.integrations.gcp import GcpIntegration
 
-publisher = pubsub_v1.PublisherClient()
-topic_path = publisher.topic_path(
-    os.environ.get('GCP_PROJECT_ID'),
-    os.environ.get('GCP_TOPIC_ID'),
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    integrations=[GcpIntegration()],
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
 )
+
+logging.basicConfig(level=logging.INFO)
 
 supabase = create_client(
     os.environ.get('SUPABASE_URL'),
@@ -54,6 +59,11 @@ def get_options_api(request: Request):
 
 def publish_symbols_to_analyze(request: Request):
     try:
+        _, project_id = default()
+        logging.info(f"Publishing to project: {project_id} topic: {os.environ.get('GCP_TOPIC_ID')}")
+        publisher = pubsub_v1.PublisherClient()
+        topic_path = publisher.topic_path(project_id, os.environ.get('GCP_TOPIC_ID'))
+
         new_symbols = request.args.get('symbol')
         symbols = get_symbols_from_database(supabase)
         if new_symbols:
