@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { registerLocaleData } from '@angular/common';
 import localePl from '@angular/common/locales/pl';
 import { FilterComponent } from './filter/filter.component';
+import { FormsModule } from '@angular/forms';
 
 registerLocaleData(localePl, 'pl-PL');
 
@@ -17,7 +18,8 @@ registerLocaleData(localePl, 'pl-PL');
   imports: [
     BrowserModule,
     CommonModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
