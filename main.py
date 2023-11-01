@@ -3,6 +3,7 @@ from download_symbols_data import download_symbol_data
 from flask import Request
 from google.cloud import pubsub_v1
 from notify_interesting_options import notify_interesting_options
+from py import process
 from supabase import create_client
 from utils import get_symbols_from_database
 import base64
@@ -15,19 +16,13 @@ import sentry_sdk
 from sentry_sdk.integrations.gcp import GcpIntegration
 
 sentry_sdk.init(
-    dsn="https://cad8a3bb6d1fb1081dcbccb69f71b878@o555346.ingest.sentry.io/4506149590401024",
+    dsn=os.environ.get('SENTRY_DSN'),
     integrations=[GcpIntegration()],
     traces_sample_rate=1.0,
     profiles_sample_rate=1.0,
 )
 
 logging.basicConfig(level=logging.INFO)
-
-publisher = pubsub_v1.PublisherClient()
-topic_path = publisher.topic_path(
-    os.environ.get('GCP_PROJECT_ID'),
-    os.environ.get('GCP_TOPIC_ID'),
-)
 
 supabase = create_client(
     os.environ.get('SUPABASE_URL'),
@@ -64,6 +59,13 @@ def get_options_api(request: Request):
 
 def publish_symbols_to_analyze(request: Request):
     try:
+        logging.info(f"Publishing to project: {process.env.GCP_PROJECT} topic: {os.environ.get('GCP_TOPIC_ID')}")
+        publisher = pubsub_v1.PublisherClient()
+        topic_path = publisher.topic_path(
+            process.env.GCP_PROJECT or process.env.GCLOUD_PROJECT,
+            os.environ.get('GCP_TOPIC_ID')
+        )
+
         new_symbols = request.args.get('symbol')
         symbols = get_symbols_from_database(supabase)
         if new_symbols:
