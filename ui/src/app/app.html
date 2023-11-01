@@ -1,0 +1,39 @@
+<div class="mx-auto">
+    <table class="min-w-full">
+        <thead>
+        <tr class="w-full h-16 border-gray-300 border-b text-gray-100 bg-gray-600 text-left">
+            <th class="p-2">Symbol</th>
+            <th class="p-2">Price</th>
+            <th class="p-2">Strike</th>
+            <th class="p-2">Expiration</th>
+            <th class="p-2">Bid</th>
+            <th class="p-2">IV</th>
+            <th class="p-2">Financials</th>
+            <th class="p-2">Updated</th>
+        </tr>
+        </thead>
+        <tbody class="[&>*:nth-child(even)]:bg-gray-100 [&>*:nth-child(odd)]:bg-gray-300">
+        <tr class="w-full border-b" *ngFor="let row of rows">
+            <td class="p-2">
+                <a href="https://finance.yahoo.com/quote/{{ row.contract_symbol }}" class="font-bold">{{ row.symbol }}</a><br>
+                <small class="font-semibold">{{ row.long_name }}</small><br>
+                <small>{{ row.industry }} &raquo; {{ row.sector }}</small>
+            </td>
+            <td class="p-2">{{ row.current_price }}</td>
+            <td class="p-2">{{ row.strike }}<br><small>({{(((row.current_price - row.strike) / row.current_price) * 100) | number:'.2-2' }}%)</small></td>
+            <td class="p-2">{{ row.expiration }}<br><small>({{ row.days_until_expire }})</small></td>
+            <td class="p-2">{{ row.bid }}<br><small>({{ row.volume }})</small></td>
+            <td class="p-2">{{ row.iv }}</td>
+            <td class="p-2 text-xs">
+                EPS &laquo; <span class="font-semibold">{{ row.trailing_eps }}</span><br>
+                EPS &raquo; <span class="font-semibold">{{ row.forward_eps }}</span><br>
+                PE &raquo; <span class="font-semibold">{{ row.forward_pe }}</span><br>
+                PE &laquo; <span class="font-semibold">{{ row.trailing_pe }}</span><br>
+                EC&nbsp;<span class="font-semibold">{{ row.next_earnings_date }}</span>
+            </td>
+            <td class="p-2 text-xs">{{ row.updated_at }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<router-outlet></router-outlet>
