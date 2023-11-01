@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from pandas import DataFrame
+from requests import HTTPError
 from supabase import Client
 import appdirs as ad
 import inflection
@@ -61,16 +62,27 @@ def download_symbol_data(symbol: str, supabase: Client):
     try:
         logging.info(f'Fetching symbol {symbol}')
         ticker = yf.Ticker(symbol)
-        info = ticker.info
-        stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
+        try:
+            info = ticker.info
+            stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
+            stock_data['update_method'] = 'info'
+        except HTTPError:
+            info = ticker.fast_info
+            stock_data = {inflection.underscore(k): info[k] for k in STOCK_COLUMNS if k in info}
+            stock_data['symbol'] = symbol
+            stock_data['current_price'] = info.last_price
+            stock_data['volume'] = info.last_volume
+            stock_data['fifty_two_week_low'] = info.year_low
+            stock_data['fifty_two_week_high'] = info.year_high
+            stock_data['update_method'] = 'fast_info'
+
         stock_data['annualized_volatility'] = get_annualized_volatility(symbol)
         stock_data['updated_at'] = datetime.now().isoformat()
         supabase.table('stocks').upsert(stock_data).execute()
 
         risk_free_rate = get_risk_free_rate_of_return()
 
-        expirations = ticker.options
-        for expiration in expirations[:EXPIRATION_PERIODS_COUNT]:
+        for expiration in ticker.options[:EXPIRATION_PERIODS_COUNT]:
             logging.info(f'Fetching options chain for symbol {symbol} expiration {expiration}')
             puts: DataFrame = ticker.option_chain(expiration).puts
 
