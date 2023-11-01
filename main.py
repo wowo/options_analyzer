@@ -2,8 +2,8 @@ from api import get_options_with_filters
 from download_symbols_data import download_symbol_data
 from flask import Request
 from google.cloud import pubsub_v1
+from google.auth import default
 from notify_interesting_options import notify_interesting_options
-from py import process
 from supabase import create_client
 from utils import get_symbols_from_database
 import base64
@@ -59,12 +59,10 @@ def get_options_api(request: Request):
 
 def publish_symbols_to_analyze(request: Request):
     try:
-        logging.info(f"Publishing to project: {process.env.GCP_PROJECT} topic: {os.environ.get('GCP_TOPIC_ID')}")
+        _, project_id = default()
+        logging.info(f"Publishing to project: {project_id} topic: {os.environ.get('GCP_TOPIC_ID')}")
         publisher = pubsub_v1.PublisherClient()
-        topic_path = publisher.topic_path(
-            process.env.GCP_PROJECT or process.env.GCLOUD_PROJECT,
-            os.environ.get('GCP_TOPIC_ID')
-        )
+        topic_path = publisher.topic_path(project_id, os.environ.get('GCP_TOPIC_ID'))
 
         new_symbols = request.args.get('symbol')
         symbols = get_symbols_from_database(supabase)
