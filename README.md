@@ -17,13 +17,13 @@
 
 # deploy http cloud function
 
-    gcloud functions deploy publish_symbols_to_analyze --runtime python311  --trigger-http --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest,GCP_TOPIC_ID=GCP_TOPIC_ID:latest --memory 512M
-    gcloud functions deploy send_interesting_options --runtime python311  --trigger-http --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest,EMAIL_CREDENTIALS=EMAIL_CREDENTIALS:latest,EMAIL_RECIPIENT=EMAIL_RECIPIENT:latest --memory 512M
-    gcloud functions deploy get_options_api --runtime python311  --trigger-http --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest --memory 512M
+    gcloud functions deploy publish_symbols_to_analyze --runtime python311  --trigger-http --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest,SENTRY_DSN=SENTRY_DSN:latest,GCP_TOPIC_ID=GCP_TOPIC_ID:latest --memory 512M
+    gcloud functions deploy send_interesting_options --runtime python311  --trigger-http --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest,SENTRY_DSN=SENTRY_DSN:latest,EMAIL_CREDENTIALS=EMAIL_CREDENTIALS:latest,EMAIL_RECIPIENT=EMAIL_RECIPIENT:latest --memory 512M
+    gcloud functions deploy get_options_api --runtime python311  --trigger-http --gen2 --allow-unauthenticated --region=europe-west2 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest,SENTRY_DSN=SENTRY_DSN:latest --memory 512M
 
 # deploy Pub/Sub consumer
     
-     gcloud functions deploy pubsub_download_symbols_data_handler --runtime python311 --trigger-topic symbols_to_analyze --gen2 --allow-unauthenticated --region=us-central1 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest --max-instances 100 --memory 512M
+     gcloud functions deploy pubsub_download_symbols_data_handler --runtime python311 --trigger-topic symbols_to_analyze --gen2 --allow-unauthenticated --region=us-central1 --set-secrets SUPABASE_URL=SUPABASE_URL:latest,SUPABASE_KEY=SUPABASE_KEY:latest,SENTRY_DSN=SENTRY_DSN:latest --max-instances 100 --memory 512M
 
 # Example API call params
 
