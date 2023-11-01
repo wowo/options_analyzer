@@ -1,12 +1,25 @@
 import { Component } from '@angular/core';
+import { SupabaseService } from './supabase.service';
+import {Filter} from "./model/filter";
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.html',
-  styles: []
 })
 export class AppComponent {
-  rows = [{
-    strike: 104, current_price: 120, contract_symbol: 'asd', symbol: 'META', long_name: 'Lorem ipsum', industry: 'Internet', sector: 'Test', bid: 5, ask: 6, iv: 0.3, delta: 0.01, expiration: '2023-11-23', days_until_expire: 23, volume: 100, trailing_eps: 10, trailing_pe: 100, forward_eps: 120, forward_pe: 130, next_earnings_date: '2023-11-30', updated_at: '2023-10-30 23:45:45'
-  }];
+  puts: any[] = [];
+  filters: Filter[] = [
+      new Filter('in_the_money', 'eq', false),
+      new Filter('current_price', 'lte', 300),
+      new Filter('price_strike_ratio', 'gte', 0.1),
+      new Filter('days_until_expire', 'lte', 32),
+      new Filter('bid_strike_ratio', 'gte', 0.01),
+  ];
+
+  constructor(private supabaseService: SupabaseService) {}
+
+
+  async ngOnInit() {
+    this.puts = await this.supabaseService.fetchPuts(this.filters, 100);
+  }
 }

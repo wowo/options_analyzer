@@ -1,4 +1,22 @@
 <div class="mx-auto">
+    <div class="w-full border-gray-300 border-b bg-gray-600 mb-8 p-4">
+        <div
+                class="chip"
+                data-dismissible="chip"
+        >
+            <div class="mr-5 mt-px">Dismissible</div>
+            <div
+                    class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md bg-pink-800 transition-colors hover:bg-pink-900"
+                    data-dismissible-target="chip"
+            >
+                <div role="button" class="h-5 w-5 p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
     <table class="min-w-full">
         <thead>
         <tr class="w-full h-16 border-gray-300 border-b text-gray-100 bg-gray-600 text-left">
@@ -12,26 +30,27 @@
             <th class="p-2">Updated</th>
         </tr>
         </thead>
-        <tbody class="[&>*:nth-child(even)]:bg-gray-100 [&>*:nth-child(odd)]:bg-gray-300">
-        <tr class="w-full border-b" *ngFor="let row of rows">
+        <tbody class="[&>*:nth-child(even)]:bg-gray-100 [&>*:nth-child(odd)]:bg-gray-300" *ngIf="puts.length">
+        <tr class="w-full border-b align-top" *ngFor="let row of puts">
             <td class="p-2">
                 <a href="https://finance.yahoo.com/quote/{{ row.contract_symbol }}" class="font-bold">{{ row.symbol }}</a><br>
                 <small class="font-semibold">{{ row.long_name }}</small><br>
                 <small>{{ row.industry }} &raquo; {{ row.sector }}</small>
             </td>
-            <td class="p-2">{{ row.current_price }}</td>
-            <td class="p-2">{{ row.strike }}<br><small>({{(((row.current_price - row.strike) / row.current_price) * 100) | number:'.2-2' }}%)</small></td>
+            <td class="p-2">{{ row.current_price | number:'.2-2' }}<br><small>{{ (100 * (row.current_price - row.previous_close) / row.previous_close) | number:'.2-2' }}%</small></td>
+
+            <td class="p-2">{{ row.strike | number:'.2-2' }}<br><small>({{(((row.current_price - row.strike) / row.current_price) * 100) | number:'.2-2' }}%)</small></td>
             <td class="p-2">{{ row.expiration }}<br><small>({{ row.days_until_expire }})</small></td>
             <td class="p-2">{{ row.bid }}<br><small>({{ row.volume }})</small></td>
-            <td class="p-2">{{ row.iv }}</td>
+            <td class="p-2">{{ row.iv | number:'.2-4' }}</td>
             <td class="p-2 text-xs">
-                EPS &laquo; <span class="font-semibold">{{ row.trailing_eps }}</span><br>
-                EPS &raquo; <span class="font-semibold">{{ row.forward_eps }}</span><br>
-                PE &raquo; <span class="font-semibold">{{ row.forward_pe }}</span><br>
-                PE &laquo; <span class="font-semibold">{{ row.trailing_pe }}</span><br>
+                EPS &laquo; <span class="font-semibold">{{ row.trailing_eps | number:'.2-2' }}</span><br>
+                EPS &raquo; <span class="font-semibold">{{ row.forward_eps | number:'.2-2' }}</span><br>
+                PE &raquo; <span class="font-semibold">{{ row.forward_pe | number:'.2-2' }}</span><br>
+                PE &laquo; <span class="font-semibold">{{ row.trailing_pe | number:'.2-2' }}</span><br>
                 EC&nbsp;<span class="font-semibold">{{ row.next_earnings_date }}</span>
             </td>
-            <td class="p-2 text-xs">{{ row.updated_at }}</td>
+            <td class="p-2 text-xs">{{ row.updated_at | date: 'short':'':'pl-PL' }}</td>
         </tr>
         </tbody>
     </table>
