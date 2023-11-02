@@ -30,23 +30,4 @@ export class SupabaseService {
     }
     return data;
   }
-
-  async getTableDefinition() {
-    const { data, error } = await this.supabase.rpc('pg_catalog', {
-      columns: '*',
-      table: 'information_schema.columns',
-      postgrest_filter__table_name:  'puts_all'
-    });
-
-    if (error) {
-      console.error('Error fetching table definition:', error);
-      return null;
-    }
-
-    return data.map((column: any) => ({
-      name: column.column_name,
-      dataType: column.data_type
-    }));
-  }
-
 }

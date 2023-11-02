@@ -26,6 +26,7 @@ export class Filter {
         'forward_pe',
         'trailing_eps',
         'trailing_pe',
+        'market_cap',
         'updated_at',
         'contract_symbol',
         'delta',
@@ -34,7 +35,11 @@ export class Filter {
         'price_strike_ratio',
 
 ]
-    constructor(public column: string, public operator: string, public value: any) {}
+    constructor(public column: string, public operator: string, public value: any) {
+        if (this.column == 'symbol') {
+            this.value = this.value.toUpperCase();
+        }
+    }
 
     public getOperatorForUI(): string {
         return Filter.operatorMapping[this.operator.toUpperCase()] || this.operator;

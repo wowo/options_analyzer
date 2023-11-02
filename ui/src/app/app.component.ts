@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
-import { SupabaseService } from './supabase.service';
-import { Filter } from './filter/filter';
+import { Component, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Filter } from './filter/filter';
+import { NgForm } from '@angular/forms';
+import { SupabaseService } from './supabase.service';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,7 @@ import { DatePipe } from '@angular/common';
   providers: [DatePipe]
 })
 export class AppComponent {
+  loading = false;
   puts: any[] = [];
   readonly Filter = Filter;
   filters: Filter[] = [
@@ -20,13 +22,11 @@ export class AppComponent {
   ];
   currentDate = '';
   showFilterForm = false;
-  column = '';
-  operator = 'eq';
-  value = '';
   operators = Object.entries(Filter.operatorMapping).map(([key, value]) => ({
       key,
       value,
   }));
+  @ViewChild('f') filterForm!: NgForm;
 
   constructor(private supabaseService: SupabaseService, private datePipe: DatePipe) {
       this.currentDate = datePipe.transform(new Date(), 'yyyy-MM-dd') || '';
@@ -38,24 +38,28 @@ export class AppComponent {
   }
 
   async fetchPuts(){
-      this.puts = await this.supabaseService.fetchPuts(this.filters, 100);
+      try {
+          this.loading = true;
+          this.puts = await this.supabaseService.fetchPuts(this.filters, 100);
+      } catch (error) {
+          console.error(error);
+      } finally {
+          this.loading = false;
+      }
   }
 
   async addFilter() {
-      this.filters.push(new Filter(this.column, this.operator, this.value));
+      this.filters.push(new Filter(
+          this.filterForm.value['column'],
+          this.filterForm.value['operator'],
+          this.filterForm.value['value']
+      ));
       this.showFilterForm = false;
-      this.resetForm();
       await this.fetchPuts();
   }
 
   async removeFilter(filter: Filter) {
     this.filters = this.filters.filter(f=> f !== filter);
     await this.fetchPuts();
-  }
-
-  private resetForm() {
-      this.column = '';
-      this.operator = 'eq';
-      this.value = ''
   }
 }
