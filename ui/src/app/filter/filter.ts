@@ -39,6 +39,12 @@ export class Filter {
         if (this.column == 'symbol') {
             this.value = this.value.toUpperCase();
         }
+        if (typeof this.value === 'string' && this.value.toUpperCase() === 'TRUE') {
+            this.value = true;
+        }
+        if (typeof this.value === 'string' && this.value.toUpperCase() === 'FALSE') {
+            this.value = false;
+        }
     }
 
     public getOperatorForUI(): string {
