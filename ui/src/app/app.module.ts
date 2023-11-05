@@ -2,6 +2,7 @@ import localePl from '@angular/common/locales/pl';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { BigNumberPipe } from './big-number.pipe';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { FilterComponent } from './filter/filter.component';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +20,7 @@ registerLocaleData(localePl, 'pl-PL');
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     CommonModule,
     AppRoutingModule,
     FormsModule

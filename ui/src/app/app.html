@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        <app-filter *ngFor="let filter of filters" [filter]="filter" (remove)="removeFilter($event)"></app-filter>
+        <app-filter *ngFor="let filter of filters" [filter]="filter" (remove)="removeFilter($event)" [@fadeInOut]></app-filter>
     </div>
     <table class="min-w-full">
         <thead>

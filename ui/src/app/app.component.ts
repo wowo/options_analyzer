@@ -3,10 +3,23 @@ import { DatePipe } from '@angular/common';
 import { Filter } from './filter/filter';
 import { NgForm } from '@angular/forms';
 import { SupabaseService } from './supabase.service';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.html',
+  animations: [
+    trigger('fadeInOut', [
+      state('void', style({ opacity: 0 })),
+      state('*', style({ opacity: 1 })),
+      transition(':enter', [
+          animate('300ms ease-in')
+      ]),
+      transition(':leave', [
+          animate('300ms ease-out')
+      ]),
+    ]),
+  ],
   providers: [DatePipe]
 })
 export class AppComponent {
