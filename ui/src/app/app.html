@@ -1,34 +1,42 @@
 <div class="mx-auto">
     <div class="w-full border-gray-300 border-b bg-gray-600 mb-8 p-4">
-        <div class="chip pl-0">
-            <div class="mr-5 mt-px">
-                <span *ngIf="!showFilterForm">&nbsp;</span>
-                <form *ngIf="showFilterForm" class="m-0 p-0 text-black" #f="ngForm" (ngSubmit)="addFilter()" [@fadeInOut]>
-                    <select name="column" #column="ngModel" class="ml-2 mr-1 rounded h-6 py-0 pl-1 w-36"  required ngModel
-                        [ngClass]="{'border-2 border-red-500': column.invalid  && (column.dirty || column.touched)}">
-                        <option></option>
-                        <option *ngFor="let col of Filter.columns">
-                            {{ col }}
-                        </option>
-                    </select>
-                    <select name="operator" #operator="ngModel" class="mx-1 rounded h-6 py-0 pl-1 w-16" required ngModel
-                            [ngClass]="{'border-2 border-red-500': operator.invalid  && (operator.dirty || operator.touched)}">
-                        <option *ngFor="let operator of operators" [value]="operator.key | lowercase">
-                            {{ operator.value }}
-                        </option>
-                    </select>
-                    <input name="value" type="text" class="mx-1 rounded h-6 align-top w-28" required ngModel>
-                    <div class="chip-button top-2 text-white" role="button">
-                        <button type="submit" class="h-5 w-5 p-1 inline-block" [disabled]="f.invalid">
+        <div class="chip chip-form">
+            <div class="chip-content pl-0 pt-0">
+                <form *ngIf="showFilterForm" class="text-black" #f="ngForm" (ngSubmit)="addFilter()" [@fadeInOut]>
+                        <select name="column" #column="ngModel" class="ml-2 mr-1 rounded h-6 py-0 pl-1 w-36"  required ngModel
+                            [ngClass]="{'border-2 border-red-500': column.invalid  && (column.dirty || column.touched)}">
+                            <option></option>
+                            <option *ngFor="let col of Filter.columns">
+                                {{ col }}
+                            </option>
+                        </select>
+                        <select name="operator" #operator="ngModel" class="mx-1 rounded h-6 py-0 pl-1 w-16" required ngModel
+                                [ngClass]="{'border-2 border-red-500': operator.invalid  && (operator.dirty || operator.touched)}">
+                            <option *ngFor="let operator of operators" [value]="operator.key | lowercase">
+                                {{ operator.value }}
+                            </option>
+                        </select>
+                        <input name="value" type="text" class="mx-1 rounded h-6 align-top w-28" required minlength="1" ngModel>
+                        <div class="chip-button">
+                            <button type="submit" [disabled]="f.invalid" role="button">
+                                <div role="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="chip-button ml-1" (click)="showFilterForm = false">
+                            <div role="button">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
-                        </button>
-                    </div>
+                            </div>
+                        </div>
                 </form>
             </div>
             <div class="chip-button" (click)="showFilterForm = true" *ngIf="!showFilterForm">
-                <div role="button" class="h-5 w-5 p-1">
+                <div role="button">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12"></path><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h12"></path>
                     </svg>
