@@ -3,7 +3,7 @@
         <div class="chip pl-0">
             <div class="mr-5 mt-px">
                 <span *ngIf="!showFilterForm">&nbsp;</span>
-                <form *ngIf="showFilterForm" class="m-0 p-0 text-black" #f="ngForm" (ngSubmit)="addFilter()">
+                <form *ngIf="showFilterForm" class="m-0 p-0 text-black" #f="ngForm" (ngSubmit)="addFilter()" [@fadeInOut]>
                     <select name="column" #column="ngModel" class="ml-2 mr-1 rounded h-6 py-0 pl-1 w-36"  required ngModel
                         [ngClass]="{'border-2 border-red-500': column.invalid  && (column.dirty || column.touched)}">
                         <option></option>
@@ -46,7 +46,8 @@
             <th class="p-2">Strike</th>
             <th class="p-2">Expiration</th>
             <th class="p-2">Bid</th>
-            <th class="p-2">IV</th>
+            <th class="p-2">Ask</th>
+            <th class="p-2">Params</th>
             <th class="p-2">Financials</th>
             <th class="p-2">Updated</th>
         </tr>
@@ -57,24 +58,31 @@
             <td class="p-2">
                 <a href="https://finance.yahoo.com/quote/{{ row.contract_symbol }}" class="font-bold">{{ row.symbol }}</a><br>
                 <small class="font-semibold">{{ row.long_name }}</small><br>
-                <small>{{ row.industry }} &raquo; {{ row.sector }}</small>
+                <small *ngIf="row.industry">{{ row.industry }} &raquo; {{ row.sector }}</small>
             </td>
             <td class="p-2">{{ row.current_price | number:'.2-2' }}<br><small>{{ (100 * (row.current_price - row.previous_close) / row.previous_close) | number:'.2-2' }}%</small></td>
 
             <td class="p-2">{{ row.strike | number:'.2-2' }}<br><small>({{(((row.current_price - row.strike) / row.current_price) * 100) | number:'.2-2' }}%)</small></td>
             <td class="p-2">{{ row.expiration }}<br><small>({{ row.days_until_expire }})</small></td>
-            <td class="p-2">{{ row.bid }}<br><small>({{ row.volume }})</small></td>
-            <td class="p-2">{{ row.iv | number:'.2-4' }}</td>
+            <td class="p-2">{{ row.bid | number:'.2-2' }}<br></td>
+            <td class="p-2">{{ row.ask | number:'.2-2' }}<br></td>
+            <td class="p-2">
+                <small>
+                    V&nbsp;<span class="font-semibold">{{ row.volume }}</span><br>
+                    IV&nbsp;<span class="font-semibold">{{ row.iv | number:'.2-4' }}</span><br>
+                    &Delta;&nbsp;<span class="font-semibold">{{ row.delta | number:'.0-4' }}</span><br>
+                    <span class="align-top">P</span>/<span class="align-bottom">S</span>&nbsp;<span class="font-semibold">{{ ((row.bid / row.strike) * 100) | number:'.2-2' }}%</span>
+                </small>
+            </td>
             <td class="p-2 text-xs">
+                MC&nbsp;<span class="font-semibold" >${{ row.market_cap | bigNumber }}</span><br>
                 EPS &laquo; <span class="font-semibold">{{ row.trailing_eps | number:'.2-2' }}</span><br>
                 EPS &raquo; <span class="font-semibold">{{ row.forward_eps | number:'.2-2' }}</span><br>
                 PE &raquo; <span class="font-semibold">{{ row.forward_pe | number:'.2-2' }}</span><br>
                 PE &laquo; <span class="font-semibold">{{ row.trailing_pe | number:'.2-2' }}</span><br>
-                EC&nbsp;<span class="font-semibold" [ngClass]="{'text-red-600': row.next_earnings_date < row.expiration && row.next_earnings_date >= currentDate}">{{ row.next_earnings_date }}</span><br>
-                MC&nbsp;<span class="font-semibold" >${{ row.market_cap | bigNumber }}</span>
-
+                EC&nbsp;<span class="font-semibold" [ngClass]="{'text-red-600': row.next_earnings_date < row.expiration && row.next_earnings_date >= currentDate}">{{ row.next_earnings_date }}</span>
             </td>
-            <td class="p-2 text-xs">{{ row.updated_at | date: 'short':'':'pl-PL' }}</td>
+            <td class="p-2 text-xs">{{ row.updated_at | date: 'yyyy-MM-dd HH:mm' }}</td>
         </tr>
         </tbody>
     </table>

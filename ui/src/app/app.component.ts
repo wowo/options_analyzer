@@ -32,6 +32,7 @@ export class AppComponent {
       new Filter('price_strike_ratio', 'gte', 0.1),
       new Filter('days_until_expire', 'lte', 32),
       new Filter('bid_strike_ratio', 'gte', 0.01),
+      new Filter('volume', 'gte', 5),
   ];
   currentDate = '';
   showFilterForm = false;
