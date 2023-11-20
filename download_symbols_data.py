@@ -58,7 +58,7 @@ def get_risk_free_rate_of_return() -> float:
     return hist['Close'].iloc[-1] / 100
 
 
-def download_symbol_data(symbol: str, supabase: Client):
+def download_symbol_data(symbol: str, supabase: Client) -> dict:
     try:
         logging.info(f'Fetching symbol {symbol}')
         ticker = yf.Ticker(symbol)
@@ -109,7 +109,9 @@ def download_symbol_data(symbol: str, supabase: Client):
             try:
                 supabase.table('puts').upsert(rows_data).execute()
             except Exception as e:
-                print(str(e))
+                logging.error(f'Exception occurred during puts upsert: {e}')
+            finally:
+                return stock_data
     except Exception as e:
         logging.error(f'Exception occurred: {e}')
         raise e

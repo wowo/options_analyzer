@@ -84,7 +84,6 @@ def publish_symbols_to_analyze(request: Request):
 
 
 def pubsub_download_symbols_data_handler(event, context):
-
     pubsub_message = base64.b64decode(event['data']).decode('utf-8')
     logging.info(f'Received message: {pubsub_message}, resource: {context.resource}, event_id: {context.event_id}')
 
