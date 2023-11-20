@@ -76,10 +76,11 @@
             <td class="p-2">{{ row.ask | number:'.2-2' }}<br></td>
             <td class="p-2">
                 <small>
-                    V&nbsp;<span class="font-semibold">{{ row.volume }}</span><br>
-                    IV&nbsp;<span class="font-semibold">{{ row.iv | number:'.2-4' }}</span><br>
-                    &Delta;&nbsp;<span class="font-semibold">{{ row.delta | number:'.0-4' }}</span><br>
-                    <span class="align-top">P</span>/<span class="align-bottom">S</span>&nbsp;<span class="font-semibold">{{ ((row.bid / row.strike) * 100) | number:'.2-2' }}%</span>
+                    <p title="Volume">V&nbsp;<span class="font-semibold">{{ row.volume }}</span></p>
+                    <p title="Implied Volatility">IV&nbsp;<span class="font-semibold">{{ row.iv | number:'.2-4' }}</span></p>
+                    <p title="Delta">&Delta;&nbsp;<span class="font-semibold">{{ row.delta | number:'.0-4' }}</span></p>
+                    <p title="Bid to strike percentage ratio"><span class="align-top">B</span>/<span class="align-bottom">S</span>&nbsp;<span class="font-semibold">{{ ((row.bid / row.strike) * 100) | number:'.2-2' }}%</span></p>
+                    <p title="Expected move on option expiration">+/-&nbsp;<span class="font-semibold">{{ row | expectedMove | number:'.1-2' }}</span> ({{ row | expectedMove:true | number:'.2-2' }}%)</p>
                 </small>
             </td>
             <td class="p-2 text-xs">
