@@ -1,8 +1,8 @@
 from api import get_options_with_filters
 from download_symbols_data import download_symbol_data
 from flask import Request
-from google.cloud import pubsub_v1
 from google.auth import default
+from google.cloud import pubsub_v1
 from notify_interesting_options import notify_interesting_options
 from supabase import create_client
 from utils import get_symbols_from_database
@@ -11,6 +11,7 @@ import functions_framework
 import json
 import logging
 import os
+import uuid
 
 import sentry_sdk
 from sentry_sdk.integrations.gcp import GcpIntegration
@@ -19,10 +20,29 @@ sentry_sdk.init(
     dsn=os.environ.get('SENTRY_DSN'),
     integrations=[GcpIntegration()],
     traces_sample_rate=1.0,
-    profiles_sample_rate=1.0,
+    profiles_sample_rate=0.1,
 )
 
-logging.basicConfig(level=logging.INFO)
+uuid_parts = str(uuid.uuid4()).split('-')
+common_unique_id = ''.join(uuid_parts[:2])
+
+
+class UuidFormatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+        super(UuidFormatter, self).__init__(*args, **kwargs)
+
+    def format(self, record):
+        record.unique_id = common_unique_id
+        return super(UuidFormatter, self).format(record)
+
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(UuidFormatter('%(asctime)s:%(levelname)s - %(message)s - %(unique_id)s'))
+
+logger = logging.Logger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 supabase = create_client(
     os.environ.get('SUPABASE_URL'),
@@ -60,7 +80,7 @@ def get_options_api(request: Request):
 def publish_symbols_to_analyze(request: Request):
     try:
         _, project_id = default()
-        logging.info(f"Publishing to project: {project_id} topic: {os.environ.get('GCP_TOPIC_ID')}")
+        logger.info(f"Publishing to project: {project_id} topic: {os.environ.get('GCP_TOPIC_ID')}")
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(project_id, os.environ.get('GCP_TOPIC_ID'))
 
@@ -71,12 +91,12 @@ def publish_symbols_to_analyze(request: Request):
             symbols = symbols + new_symbols
         else:
             new_symbols = []
-        logging.info(f'Starting to publishing, all: {len(symbols)} new symbols: {new_symbols}')
+        logger.info(f'Starting to publishing, all: {len(symbols)} new symbols: {new_symbols}')
         for symbol in symbols:
             message_future = publisher.publish(topic_path, symbol.encode('utf-8'))
             message_future.result()
         msg = f'Published {len(symbols)} symbols, including {len(new_symbols)} new symbols'
-        logging.info(msg)
+        logger.info(msg)
 
         return msg, 200
     except Exception as e:
@@ -84,11 +104,10 @@ def publish_symbols_to_analyze(request: Request):
 
 
 def pubsub_download_symbols_data_handler(event, context):
-
     pubsub_message = base64.b64decode(event['data']).decode('utf-8')
-    logging.info(f'Received message: {pubsub_message}, resource: {context.resource}, event_id: {context.event_id}')
+    logger.info(f'Received message: {pubsub_message}, resource: {context.resource}, event_id: {context.event_id}')
 
-    download_symbol_data(pubsub_message, supabase)
+    download_symbol_data(pubsub_message, supabase, logger)
 
 
 def send_interesting_options(request: Request):
@@ -97,11 +116,11 @@ def send_interesting_options(request: Request):
 
     recipient = os.environ.get('EMAIL_RECIPIENT').replace('-', ',')
     if not recipient:
-        logging.error('No email recipients specified')
+        logger.error('No email recipients specified')
         return 'No email recipients specified', 500
 
-    logging.info(f'Sending interesting stock opportunities to {recipient}')
+    logger.info(f'Sending interesting stock opportunities to {recipient}')
     notify_interesting_options(supabase, recipient)
-    logging.info(f'All sent')
+    logger.info(f'All sent')
 
     return '', 200
