@@ -13,8 +13,17 @@ if __name__ == '__main__':
     response = supabase.table('stocks')\
         .select('symbol')\
         .is_('next_earnings_date', 'null')\
+        .order('symbol')\
         .execute()
-    symbols = [x['symbol'] for x in response.data]
+    symbols_with_nulls = [x['symbol'] for x in response.data]
+    symbols_with_nulls = []
+
+    response = supabase.table('stocks') \
+        .select('symbol') \
+        .lt('next_earnings_date', datetime.today()) \
+        .order('symbol') \
+        .execute()
+    symbols = symbols_with_nulls + [x['symbol'] for x in response.data]
 
     for symbol in symbols:
         print(f'Fetching {symbol}')

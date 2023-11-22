@@ -34,7 +34,7 @@ def notify_interesting_options(supabase: Client, recipient: str):
         'updated_at': parser.parse(x['updated_at']).astimezone(cest).strftime('%y-%m-%d<br>%X')
     }, response.data)
 
-    output = template.render(data=data)
+    output = template.render(data=data, current_date=datetime.today().strftime('%Y-%m-%d'))
     send_over_email(output, recipient)
     with open('/tmp/output.html', 'w') as f:
         f.write(output)
