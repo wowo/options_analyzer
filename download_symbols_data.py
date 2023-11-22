@@ -4,7 +4,7 @@ from requests import HTTPError
 from supabase import Client
 import appdirs as ad
 import inflection
-import logging
+from logging import Logger
 import numpy as np
 import pytz
 import scipy.stats as stats
@@ -58,9 +58,9 @@ def get_risk_free_rate_of_return() -> float:
     return hist['Close'].iloc[-1] / 100
 
 
-def download_symbol_data(symbol: str, supabase: Client) -> dict:
+def download_symbol_data(symbol: str, supabase: Client, logger: Logger) -> dict:
     try:
-        logging.info(f'Fetching symbol {symbol}')
+        logger.info(f'Fetching symbol {symbol}')
         ticker = yf.Ticker(symbol)
         try:
             info = ticker.info
@@ -83,7 +83,7 @@ def download_symbol_data(symbol: str, supabase: Client) -> dict:
         risk_free_rate = get_risk_free_rate_of_return()
 
         for expiration in ticker.options[:EXPIRATION_PERIODS_COUNT]:
-            logging.info(f'Fetching options chain for symbol {symbol} expiration {expiration}')
+            logger.info(f'Fetching options chain for symbol {symbol} expiration {expiration}')
             puts: DataFrame = ticker.option_chain(expiration).puts
 
             underscore_cols = {}
@@ -109,9 +109,18 @@ def download_symbol_data(symbol: str, supabase: Client) -> dict:
             try:
                 supabase.table('puts').upsert(rows_data).execute()
             except Exception as e:
-                logging.error(f'Exception occurred during puts upsert: {e}')
+                logger.error(f'Exception occurred during puts upsert: {e}')
             finally:
                 return stock_data
     except Exception as e:
-        logging.error(f'Exception occurred: {e}')
+        logger.error(f'Exception occurred: {e}')
         raise e
+
+# if __name__ == '__main__':
+#     from supabase import create_client
+#     import os
+#     supabase = create_client(
+#         os.environ.get('SUPABASE_URL'),
+#         os.environ.get('SUPABASE_KEY')
+#     )
+#     download_symbol_data('DIS', supabase)
