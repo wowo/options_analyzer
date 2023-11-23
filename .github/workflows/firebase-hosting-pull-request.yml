@@ -15,10 +15,7 @@ jobs:
         run: sed -i "s#YOUR_SUPABASE_URL#${{ secrets.SUPABASE_URL}}#g" ui/src/environments/environment.ts
       - name: "Change SUPABASE_KEY"
         run: sed -i "s#YOUR_SUPABASE_KEY#${{ secrets.SUPABASE_KEY}}#g" ui/src/environments/environment.ts
-      - name: "Change production to true"
-        run: sed -i 's#production:false#production:true#g' ui/src/environments/environment.ts
       - run: cd ui && npm ci && npm run build
-      - run: ls -la
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
