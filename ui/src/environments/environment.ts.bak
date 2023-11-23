@@ -1,0 +1,5 @@
+export const environment = {
+  production: true,
+  supabaseUrl: 'https://ifkpgskkbcdyivuxmeev.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlma3Bnc2trYmNkeWl2dXhtZWV2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5NDQ2MjU4NSwiZXhwIjoyMDEwMDM4NTg1fQ.xAc-NmZWQcJ_bBfipXnmxGXyW-RVoz-xOyJIaMS7mT0',
+}
