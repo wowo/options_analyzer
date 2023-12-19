@@ -104,7 +104,8 @@ def download_symbol_data(symbol: str, supabase: Client, logger: Logger) -> dict:
                 row_data['delta'] = get_black_scholes_put_delta(stock_data['current_price'], row_data['strike'],
                                                                 days_expire / 365, risk_free_rate,
                                                                 stock_data['annualized_volatility'])
-
+                row_data['bid'] = row_data['bid'] if row_data['bid'] > 0 else row_data['last_price']
+                row_data['ask'] = row_data['ask'] if row_data['ask'] > 0 else row_data['last_price']
                 rows_data.append(row_data)
             try:
                 supabase.table('puts').upsert(rows_data).execute()

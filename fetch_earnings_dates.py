@@ -16,7 +16,6 @@ if __name__ == '__main__':
         .order('symbol')\
         .execute()
     symbols_with_nulls = [x['symbol'] for x in response.data]
-    symbols_with_nulls = []
 
     response = supabase.table('stocks') \
         .select('symbol') \
@@ -25,8 +24,9 @@ if __name__ == '__main__':
         .execute()
     symbols = symbols_with_nulls + [x['symbol'] for x in response.data]
 
+    print(f'{len(symbols)} symbols to fetch')
     for symbol in symbols:
-        print(f'Fetching {symbol}')
+        print(f'>> fetching {symbol}')
         url = f'https://www.earningswhispers.com/api/getstocksdata/{symbol}'
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
@@ -34,8 +34,9 @@ if __name__ == '__main__':
             'Referer': url
         }
         response = requests.request('GET', url, headers=headers)
-        if response.status_code == 200:
-            data = {
-                'next_earnings_date': response.json()['nextEPSDate']
-            }
-            supabase.table('stocks').update(data).eq('symbol', symbol).execute()
+        if response.status_code != 200:
+            continue
+
+        data = response.json()
+        print(f'>> updating {symbol} next earnings date: {data["nextEPSDate"]}')
+        supabase.table('stocks').update({'next_earnings_date': data['nextEPSDate']}).eq('symbol', symbol).execute()
